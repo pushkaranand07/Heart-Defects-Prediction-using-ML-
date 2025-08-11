@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
+import sklearn  # Required for Python 3.13 compatibility
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, roc_curve, auc
@@ -214,54 +215,55 @@ def create_sample_data():
 @st.cache_resource
 def train_model():
     """Train the machine learning model."""
-    df = load_data()
-    if df is None:
+    try:
+        df = load_data()
+        feature_columns = [
+            'age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 
+            'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal',
+            'age_group', 'bp_category'
+        ]
+        
+        X = df[feature_columns]
+        y = df['target']
+        
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42, stratify=y
+        )
+        
+        model = RandomForestClassifier(
+            n_estimators=200,
+            max_depth=10,
+            random_state=42,
+            class_weight='balanced',
+            min_samples_split=5,
+            max_features='sqrt'
+        )
+        model.fit(X_train, y_train)
+        
+        y_pred = model.predict(X_test)
+        y_proba = model.predict_proba(X_test)[:, 1]
+        accuracy = accuracy_score(y_test, y_pred)
+        
+        cm = confusion_matrix(y_test, y_pred)
+        
+        fpr, tpr, _ = roc_curve(y_test, y_proba)
+        roc_auc = auc(fpr, tpr)
+        
+        importances = model.feature_importances_
+        feature_names = [
+            'Age', 'Sex', 'Chest Pain', 'Blood Pressure', 'Cholesterol', 'Blood Sugar',
+            'ECG', 'Max Heart Rate', 'Exercise Angina', 'ST Depression', 'Slope',
+            'Vessels', 'Thalassemia', 'Age Group', 'BP Category'
+        ]
+        feature_importance_df = pd.DataFrame({
+            'Feature': feature_names,
+            'Importance': importances
+        }).sort_values('Importance', ascending=False)
+        
+        return model, accuracy, cm, fpr, tpr, roc_auc, feature_importance_df
+    except Exception as e:
+        st.error(f"Model training failed: {str(e)}")
         return None, None, None, None, None, None, None
-    
-    feature_columns = [
-        'age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 
-        'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal',
-        'age_group', 'bp_category'
-    ]
-    
-    X = df[feature_columns]
-    y = df['target']
-    
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
-    )
-    
-    model = RandomForestClassifier(
-        n_estimators=200,
-        max_depth=10,
-        random_state=42,
-        class_weight='balanced',
-        min_samples_split=5,
-        max_features='sqrt'
-    )
-    model.fit(X_train, y_train)
-    
-    y_pred = model.predict(X_test)
-    y_proba = model.predict_proba(X_test)[:, 1]
-    accuracy = accuracy_score(y_test, y_pred)
-    
-    cm = confusion_matrix(y_test, y_pred)
-    
-    fpr, tpr, _ = roc_curve(y_test, y_proba)
-    roc_auc = auc(fpr, tpr)
-    
-    importances = model.feature_importances_
-    feature_names = [
-        'Age', 'Sex', 'Chest Pain', 'Blood Pressure', 'Cholesterol', 'Blood Sugar',
-        'ECG', 'Max Heart Rate', 'Exercise Angina', 'ST Depression', 'Slope',
-        'Vessels', 'Thalassemia', 'Age Group', 'BP Category'
-    ]
-    feature_importance_df = pd.DataFrame({
-        'Feature': feature_names,
-        'Importance': importances
-    }).sort_values('Importance', ascending=False)
-    
-    return model, accuracy, cm, fpr, tpr, roc_auc, feature_importance_df
 
 # Create input form
 def input_form():
@@ -740,11 +742,6 @@ def main():
     
     df = load_data()
     model_results = train_model()
-    
-    if model_results[0] is None:
-        st.error("Failed to load data or train model. Please check your internet connection and try again.")
-        return
-    
     model, accuracy, cm, fpr, tpr, roc_auc, feature_importance_df = model_results
     
     with tab1:
