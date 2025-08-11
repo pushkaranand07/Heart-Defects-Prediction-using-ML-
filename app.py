@@ -3,13 +3,12 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-import sklearn  # Required for Python 3.13 compatibility
+import sklearn
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, roc_curve, auc
 from sklearn.impute import SimpleImputer
 import joblib
-import os
 import time
 import seaborn as sns
 import matplotlib.pyplot as plt
