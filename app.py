@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-import sklearn
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, roc_curve, auc
@@ -35,7 +34,7 @@ st.markdown("""
         margin-bottom: 2rem;
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-    [data-testid="stAppViewContainer"] {
+    .stApp {
         background: linear-gradient(135deg, rgba(255, 75, 75, 0.1), rgba(75, 150, 255, 0.1));
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
@@ -110,7 +109,7 @@ st.markdown("""
         display: flex;
         align-items: center;
         gap: 10px;
-        color: lightblue;
+        color: #4b75ff;
         margin-bottom: 15px;
     }
 </style>
@@ -136,6 +135,7 @@ def load_data():
             st.warning("Unable to load external data. Using sample dataset.")
             return create_sample_data()
         
+        # Convert target to binary
         df['target'] = df['target'].apply(lambda x: 1 if x > 0 else 0)
         
         # Handle missing values
@@ -268,7 +268,8 @@ def train_model():
 def input_form():
     """Create the user input form."""
     with st.form("prediction_form", clear_on_submit=False):
-        st.subheader("🏥 Patient Health Information", divider='red')
+        st.subheader("🏥 Patient Health Information")
+        st.divider()
         
         col1, col2, col3 = st.columns(3)
         
@@ -427,7 +428,7 @@ def display_results(prediction, probability, model, features):
         with st.expander("📋 Detailed Health Recommendations", expanded=True):
             st.markdown("""
             <div class='recommendation-card'>
-                <h4 style="color: lightblue">🩺 Medical Consultation</h4>
+                <h4 style="color: #4b75ff">🩺 Medical Consultation</h4>
                 <ul>
                     <li>Schedule an appointment with a cardiologist immediately</li>
                     <li>Request a full cardiac workup including stress test and echocardiogram</li>
@@ -436,7 +437,7 @@ def display_results(prediction, probability, model, features):
             </div>
             
             <div class='recommendation-card'>
-                <h4 style="color: lightblue;">📊 Health Monitoring</h4>
+                <h4 style="color: #4b75ff;">📊 Health Monitoring</h4>
                 <ul>
                     <li>Monitor blood pressure twice daily and maintain a log</li>
                     <li>Track cholesterol levels monthly with lipid profile tests</li>
@@ -446,7 +447,7 @@ def display_results(prediction, probability, model, features):
             </div>
             
             <div class='recommendation-card'>
-                <h4 style="color: lightblue;">🍎 Lifestyle Changes</h4>
+                <h4 style="color: #4b75ff;">🍎 Lifestyle Changes</h4>
                 <ul>
                     <li>Adopt a heart-healthy diet (Mediterranean diet recommended)</li>
                     <li>Begin light exercise (walking) after medical clearance</li>
@@ -478,7 +479,7 @@ def display_results(prediction, probability, model, features):
         with st.expander("📋 Heart Health Maintenance Tips", expanded=True):
             st.markdown("""
             <div class='recommendation-card'>
-                <h4 style="color: lightblue;">💪 Preventive Care</h4>
+                <h4 style="color: #4b75ff;">💪 Preventive Care</h4>
                 <ul>
                     <li>Continue regular cardiovascular exercise (150 minutes/week)</li>
                     <li>Maintain annual heart health checkups</li>
@@ -488,7 +489,7 @@ def display_results(prediction, probability, model, features):
             </div>
             
             <div class='recommendation-card'>
-                <h4 style="color: lightblue;">🥗 Nutrition Guidance</h4>
+                <h4 style="color: #4b75ff;">🥗 Nutrition Guidance</h4>
                 <ul>
                     <li>Focus on fruits, vegetables, whole grains, and lean proteins</li>
                     <li>Limit saturated fats, trans fats, and sodium intake</li>
@@ -498,7 +499,7 @@ def display_results(prediction, probability, model, features):
             </div>
             
             <div class='recommendation-card'>
-                <h4 style="color: lightblue;">😌 Wellness Practices</h4>
+                <h4 style="color: #4b75ff;">😌 Wellness Practices</h4>
                 <ul>
                     <li>Practice stress-reduction techniques (meditation, yoga)</li>
                     <li>Maintain healthy sleep patterns (7-9 hours/night)</li>
@@ -508,7 +509,8 @@ def display_results(prediction, probability, model, features):
             </div>
             """, unsafe_allow_html=True)
     
-    st.subheader("🔑 Key Contributing Factors", divider='red')
+    st.subheader("🔑 Key Contributing Factors")
+    st.divider()
     
     if model is not None:
         importances = model.feature_importances_
@@ -548,13 +550,14 @@ def display_results(prediction, probability, model, features):
         st.plotly_chart(fig, use_container_width=True)
 
 # Data exploration section
-def show_data_exploration(df):
+def show_data_exploration(df, cm, fpr, tpr, roc_auc, feature_importance_df):
     """Display data exploration visualizations."""
     if df is None:
         st.error("Data not available for exploration.")
         return
         
-    st.subheader("📊 Heart Disease Data Analysis", divider='red')
+    st.subheader("📊 Heart Disease Data Analysis")
+    st.divider()
     
     col1, col2, col3, col4 = st.columns(4)
     with col1:
@@ -565,84 +568,6 @@ def show_data_exploration(df):
         st.metric("Healthy Cases", len(df[df['target'] == 0]))
     with col4:
         st.metric("Average Age", f"{df['age'].mean():.1f} years")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("#### Age Distribution by Heart Condition")
-        fig = px.histogram(df, x='age', color='target_str', 
-                          nbins=20, barmode='overlay', opacity=0.7,
-                          color_discrete_sequence=['#4caf50', '#ff4b4b'])
-        fig.update_layout(
-            legend_title_text='Condition',
-            xaxis_title='Age (Years)',
-            yaxis_title='Number of Patients',
-            plot_bgcolor='rgba(0,0,0,0)'
-        )
-        st.plotly_chart(fig, use_container_width=True)
-        
-    with col2:
-        st.markdown("#### Heart Disease Prevalence by Gender")
-        gender_counts = df.groupby(['sex_str', 'target_str']).size().unstack(fill_value=0)
-        fig = px.bar(gender_counts, barmode='group',
-                    color_discrete_sequence=['#4caf50', '#ff4b4b'])
-        fig.update_layout(
-            xaxis_title='Gender',
-            yaxis_title='Number of Patients',
-            legend_title_text='Condition',
-            plot_bgcolor='rgba(0,0,0,0)'
-        )
-        st.plotly_chart(fig, use_container_width=True)
-    
-    st.markdown("#### Cholesterol vs Blood Pressure by Heart Condition")
-    fig = px.scatter(df, x='chol', y='trestbps', color='target_str',
-                    color_discrete_sequence=['#4caf50', '#ff4b4b'],
-                    hover_data=['age', 'thalach'],
-                    labels={'chol': 'Cholesterol (mg/dl)', 
-                           'trestbps': 'Resting Blood Pressure (mm Hg)'})
-    fig.update_layout(
-        legend_title_text='Condition',
-        plot_bgcolor='rgba(0,0,0,0)'
-    )
-    st.plotly_chart(fig, use_container_width=True)
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("#### Chest Pain Types Distribution")
-        cp_counts = df['cp_str'].value_counts()
-        fig = px.pie(cp_counts, values=cp_counts.values, names=cp_counts.index,
-                    color_discrete_sequence=px.colors.sequential.Reds_r)
-        fig.update_traces(textposition='inside', textinfo='percent+label')
-        st.plotly_chart(fig, use_container_width=True)
-    
-    with col2:
-        st.markdown("#### Max Heart Rate by Age and Condition")
-        fig = px.scatter(df, x='age', y='thalach', color='target_str',
-                        color_discrete_sequence=['#4caf50', '#ff4b4b'],
-                        labels={'age': 'Age (Years)', 
-                               'thalach': 'Max Heart Rate'})
-        fig.update_layout(
-            legend_title_text='Condition',
-            plot_bgcolor='rgba(0,0,0,0)'
-        )
-        st.plotly_chart(fig, use_container_width=True)
-
-# Model information section
-def show_model_info(model, accuracy, cm, fpr, tpr, roc_auc, feature_importance_df):
-    """Display model performance metrics and information."""
-    if model is None:
-        st.error("Model not available.")
-        return
-        
-    st.subheader("🤖 Model Performance & Information", divider='red')
-    
-    st.markdown("#### Model Performance Metrics")
-    
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Model Accuracy", f"{accuracy:.2%}")
-    col2.metric("ROC AUC Score", f"{roc_auc:.3f}")
-    col3.metric("Training Features", "15")
-    col4.metric("Model Type", "Random Forest")
     
     col1, col2 = st.columns(2)
     
@@ -715,6 +640,148 @@ def show_model_info(model, accuracy, cm, fpr, tpr, roc_auc, feature_importance_d
         - Blood pressure categorization
         - Original features + engineered features
         """)
+        
+    # Additional visualizations
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("#### Age Distribution by Heart Condition")
+        fig = px.histogram(df, x='age', color='target_str', 
+                          nbins=20, barmode='overlay', opacity=0.7,
+                          color_discrete_sequence=['#4caf50', '#ff4b4b'])
+        fig.update_layout(
+            legend_title_text='Condition',
+            xaxis_title='Age (Years)',
+            yaxis_title='Number of Patients',
+            plot_bgcolor='rgba(0,0,0,0)'
+        )
+        st.plotly_chart(fig, use_container_width=True)
+        
+    with col2:
+        st.markdown("#### Heart Disease Prevalence by Gender")
+        gender_counts = df.groupby(['sex_str', 'target_str']).size().unstack(fill_value=0)
+        fig = px.bar(gender_counts, barmode='group',
+                    color_discrete_sequence=['#4caf50', '#ff4b4b'])
+        fig.update_layout(
+            xaxis_title='Gender',
+            yaxis_title='Number of Patients',
+            legend_title_text='Condition',
+            plot_bgcolor='rgba(0,0,0,0)'
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    
+    st.markdown("#### Cholesterol vs Blood Pressure by Heart Condition")
+    fig = px.scatter(df, x='chol', y='trestbps', color='target_str',
+                    color_discrete_sequence=['#4caf50', '#ff4b4b'],
+                    hover_data=['age', 'thalach'],
+                    labels={'chol': 'Cholesterol (mg/dl)', 
+                           'trestbps': 'Resting Blood Pressure (mm Hg)'})
+    fig.update_layout(
+        legend_title_text='Condition',
+        plot_bgcolor='rgba(0,0,0,0)'
+    )
+    st.plotly_chart(fig, use_container_width=True)
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("#### Chest Pain Types Distribution")
+        cp_counts = df['cp_str'].value_counts()
+        fig = px.pie(cp_counts, values=cp_counts.values, names=cp_counts.index,
+                    color_discrete_sequence=px.colors.sequential.Reds_r)
+        fig.update_traces(textposition='inside', textinfo='percent+label')
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with col2:
+        st.markdown("#### Max Heart Rate by Age and Condition")
+        fig = px.scatter(df, x='age', y='thalach', color='target_str',
+                        color_discrete_sequence=['#4caf50', '#ff4b4b'],
+                        labels={'age': 'Age (Years)', 
+                               'thalach': 'Max Heart Rate'})
+        fig.update_layout(
+            legend_title_text='Condition',
+            plot_bgcolor='rgba(0,0,0,0)'
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+# Model information section
+def show_model_info(model, accuracy, cm, fpr, tpr, roc_auc, feature_importance_df):
+    """Display model performance metrics and information."""
+    if model is None:
+        st.error("Model not available.")
+        return
+        
+    st.subheader("🤖 Model Performance & Information")
+    st.divider()
+    
+    st.markdown("#### Model Performance Metrics")
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Accuracy", f"{accuracy:.2%}")
+    with col2:
+        st.metric("ROC AUC Score", f"{roc_auc:.3f}")
+    with col3:
+        st.metric("Number of Trees", model.n_estimators)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("#### Confusion Matrix")
+        fig, ax = plt.subplots(figsize=(6, 4))
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Reds', ax=ax,
+                   xticklabels=['Healthy', 'Heart Disease'],
+                   yticklabels=['Healthy', 'Heart Disease'],
+                   cbar_kws={'label': 'Count'})
+        ax.set_xlabel('Predicted Condition')
+        ax.set_ylabel('Actual Condition')
+        ax.set_title('Model Prediction Accuracy')
+        st.pyplot(fig)
+        plt.close()
+    
+    with col2:
+        st.markdown("#### ROC Curve")
+        roc_fig = go.Figure()
+        roc_fig.add_trace(go.Scatter(
+            x=fpr, y=tpr, mode='lines', 
+            name=f'ROC Curve (AUC = {roc_auc:.3f})',
+            line=dict(color='#ff4b4b', width=3)
+        ))
+        roc_fig.add_trace(go.Scatter(
+            x=[0, 1], y=[0, 1], 
+            mode='lines', 
+            line=dict(color='gray', dash='dash'),
+            name='Random Chance (AUC = 0.5)'
+        ))
+        roc_fig.update_layout(
+            xaxis_title='False Positive Rate',
+            yaxis_title='True Positive Rate',
+            height=350,
+            plot_bgcolor='rgba(0,0,0,0)',
+            legend=dict(x=0.6, y=0.2)
+        )
+        st.plotly_chart(roc_fig, use_container_width=True)
+    
+    st.markdown("#### Model Parameters")
+    st.json({
+        "n_estimators": model.n_estimators,
+        "max_depth": model.max_depth,
+        "random_state": model.random_state,
+        "class_weight": str(model.class_weight),
+        "min_samples_split": model.min_samples_split,
+        "max_features": model.max_features
+    })
+    
+    st.markdown("#### Feature Importance")
+    fig = px.bar(feature_importance_df, x='Importance', y='Feature', 
+                orientation='h', color='Importance',
+                color_continuous_scale='Reds',
+                labels={'Importance': 'Feature Importance Score'})
+    fig.update_layout(
+        height=500, 
+        yaxis={'categoryorder':'total ascending'},
+        plot_bgcolor='rgba(0,0,0,0)',
+        margin=dict(l=150, r=50, t=50, b=50)
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
 # Main app function
 def main():
@@ -739,6 +806,7 @@ def main():
     
     tab1, tab2, tab3 = st.tabs(["🏥 Heart Disease Prediction", "📊 Data Exploration", "🤖 Model Information"])
     
+    # Load data and train model
     df = load_data()
     model_results = train_model()
     model, accuracy, cm, fpr, tpr, roc_auc, feature_importance_df = model_results
@@ -790,15 +858,22 @@ def main():
                 st.error("Model is not available. Please try refreshing the page.")
     
     with tab2:
-        show_data_exploration(df)
+        if all(item is not None for item in [df, cm, fpr, tpr, roc_auc, feature_importance_df]):
+            show_data_exploration(df, cm, fpr, tpr, roc_auc, feature_importance_df)
+        else:
+            st.error("Data not available for exploration.")
     
     with tab3:
-        show_model_info(model, accuracy, cm, fpr, tpr, roc_auc, feature_importance_df)
+        if all(item is not None for item in [model, accuracy, cm, fpr, tpr, roc_auc, feature_importance_df]):
+            show_model_info(model, accuracy, cm, fpr, tpr, roc_auc, feature_importance_df)
+        else:
+            st.error("Model information not available.")
     
+    # Footer
     st.markdown("---")
     st.markdown("""
     <div style='text-align: center; margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;'>
-        <h4 style="color: lightblue;">⚠️ Medical Disclaimer</h4>
+        <h4 style="color: #4b75ff;">⚠️ Medical Disclaimer</h4>
         <p style='color: #666; font-size: 14px;'>
             This tool provides risk assessment only and is not a substitute for professional medical advice, 
             diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider 
