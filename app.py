@@ -110,7 +110,7 @@ st.markdown("""
         display: flex;
         align-items: center;
         gap: 10px;
-        color: #1e1e2e;
+        color: lightblue;
         margin-bottom: 15px;
     }
 </style>
@@ -426,7 +426,7 @@ def display_results(prediction, probability, model, features):
         with st.expander("📋 Detailed Health Recommendations", expanded=True):
             st.markdown("""
             <div class='recommendation-card'>
-                <h4 style="color: #1e1e2e;">🩺 Medical Consultation</h4>
+                <h4 style="color: lightblue">🩺 Medical Consultation</h4>
                 <ul>
                     <li>Schedule an appointment with a cardiologist immediately</li>
                     <li>Request a full cardiac workup including stress test and echocardiogram</li>
@@ -435,7 +435,7 @@ def display_results(prediction, probability, model, features):
             </div>
             
             <div class='recommendation-card'>
-                <h4 style="color: #1e1e2e;">📊 Health Monitoring</h4>
+                <h4 style="color: lightblue;">📊 Health Monitoring</h4>
                 <ul>
                     <li>Monitor blood pressure twice daily and maintain a log</li>
                     <li>Track cholesterol levels monthly with lipid profile tests</li>
@@ -445,7 +445,7 @@ def display_results(prediction, probability, model, features):
             </div>
             
             <div class='recommendation-card'>
-                <h4 style="color: #1e1e2e;">🍎 Lifestyle Changes</h4>
+                <h4 style="color: lightblue;">🍎 Lifestyle Changes</h4>
                 <ul>
                     <li>Adopt a heart-healthy diet (Mediterranean diet recommended)</li>
                     <li>Begin light exercise (walking) after medical clearance</li>
@@ -477,7 +477,7 @@ def display_results(prediction, probability, model, features):
         with st.expander("📋 Heart Health Maintenance Tips", expanded=True):
             st.markdown("""
             <div class='recommendation-card'>
-                <h4 style="color: #1e1e2e;">💪 Preventive Care</h4>
+                <h4 style="color: lightblue;">💪 Preventive Care</h4>
                 <ul>
                     <li>Continue regular cardiovascular exercise (150 minutes/week)</li>
                     <li>Maintain annual heart health checkups</li>
@@ -487,7 +487,7 @@ def display_results(prediction, probability, model, features):
             </div>
             
             <div class='recommendation-card'>
-                <h4 style="color: #1e1e2e;">🥗 Nutrition Guidance</h4>
+                <h4 style="color: lightblue;">🥗 Nutrition Guidance</h4>
                 <ul>
                     <li>Focus on fruits, vegetables, whole grains, and lean proteins</li>
                     <li>Limit saturated fats, trans fats, and sodium intake</li>
@@ -497,7 +497,7 @@ def display_results(prediction, probability, model, features):
             </div>
             
             <div class='recommendation-card'>
-                <h4 style="color: #1e1e2e;">😌 Wellness Practices</h4>
+                <h4 style="color: lightblue;">😌 Wellness Practices</h4>
                 <ul>
                     <li>Practice stress-reduction techniques (meditation, yoga)</li>
                     <li>Maintain healthy sleep patterns (7-9 hours/night)</li>
@@ -802,7 +802,7 @@ def main():
     st.markdown("---")
     st.markdown("""
     <div style='text-align: center; margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;'>
-        <h4 style="color: #1e1e2e;">⚠️ Medical Disclaimer</h4>
+        <h4 style="color: lightblue;">⚠️ Medical Disclaimer</h4>
         <p style='color: #666; font-size: 14px;'>
             This tool provides risk assessment only and is not a substitute for professional medical advice, 
             diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider 
