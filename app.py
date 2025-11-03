@@ -22,98 +22,17 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for styling
-st.markdown("""
-<style>
-    .main-header {
-        color: #1e1e2e;
-        text-align: center;
-        padding: 1.5rem 0;
-        background: linear-gradient(90deg, #ffd6d6 0%, #ff9e9e 100%);
-        border-radius: 15px;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    .stApp {
-        background: linear-gradient(135deg, rgba(255, 75, 75, 0.1), rgba(75, 150, 255, 0.1));
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    .card {
-        background: white;
-        border-radius: 15px;
-        padding: 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        margin-bottom: 20px;
-        transition: all 0.3s ease;
-        border-left: 4px solid #ff4b4b;
-    }
-    
-    .result-card {
-        background: linear-gradient(135deg, rgba(255, 75, 75, 0.1), rgba(75, 150, 255, 0.1));
-        border-radius: 15px;
-        padding: 30px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        text-align: center;
-        margin-top: 20px;
-        border-top: 4px solid #ff4b4b;
-    }
-    
-    .healthy {
-        color: #4caf50;
-        font-weight: 700;
-    }
-    
-    .risk {
-        color: #ff4b4b;
-        font-weight: 700;
-    }
-    
-    .risk-meter {
-        width: 100%;
-        height: 30px;
-        background: linear-gradient(90deg, #4caf50 0%, #ffd900 50%, #ff4b4b 100%);
-        border-radius: 15px;
-        margin: 20px 0;
-        position: relative;
-    }
-    
-    .risk-indicator {
-        position: absolute;
-        top: -10px;
-        width: 10px;
-        height: 50px;
-        background: #1e1e2e;
-        transform: translateX(-50%);
-        border-radius: 3px;
-        transition: left 1s ease;
-    }
-    
-    .risk-labels {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 5px;
-        font-size: 0.8rem;
-        color: #1e1e2e;
-    }
-    
-    .recommendation-card {
-        background: linear-gradient(135deg, rgba(255, 75, 75, 0.1), rgba(75, 150, 255, 0.1));
-        border-radius: 15px;
-        padding: 20px;
-        margin: 10px 0;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        border-left: 3px solid #ff4b4b;
-    }
-    
-    .recommendation-card h4 {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        color: #4b75ff;
-        margin-bottom: 15px;
-    }
-</style>
-""", unsafe_allow_html=True)
+# Load external stylesheet if present (keeps app.py tidy and makes visual updates easier)
+try:
+    with open("assets/styles.css", "r", encoding="utf-8") as _css:
+        st.markdown(f"<style>{_css.read()}</style>", unsafe_allow_html=True)
+except Exception:
+    # If the external stylesheet isn't available for some reason, fall back to a minimal inline style
+    st.markdown("""
+    <style>
+        .main-header { text-align:left; padding:0.5rem 0; }
+    </style>
+    """, unsafe_allow_html=True)
 
 # Load and preprocess data
 @st.cache_data
@@ -547,7 +466,7 @@ def display_results(prediction, probability, model, features):
             paper_bgcolor='rgba(0,0,0,0)'
         )
         
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key='top_feature_importance')
 
 # Data exploration section
 def show_data_exploration(df, cm, fpr, tpr, roc_auc, feature_importance_df):
@@ -605,7 +524,7 @@ def show_data_exploration(df, cm, fpr, tpr, roc_auc, feature_importance_df):
             plot_bgcolor='rgba(0,0,0,0)',
             legend=dict(x=0.6, y=0.2)
         )
-        st.plotly_chart(roc_fig, use_container_width=True)
+        st.plotly_chart(roc_fig, use_container_width=True, key='roc_explore')
     
     st.markdown("#### Feature Importance Analysis")
     fig = px.bar(feature_importance_df, x='Importance', y='Feature', 
@@ -618,7 +537,7 @@ def show_data_exploration(df, cm, fpr, tpr, roc_auc, feature_importance_df):
         plot_bgcolor='rgba(0,0,0,0)',
         margin=dict(l=150, r=50, t=50, b=50)
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key='feat_importance_explore')
     
     with st.expander("🔧 Technical Model Details"):
         st.markdown("""
@@ -654,7 +573,7 @@ def show_data_exploration(df, cm, fpr, tpr, roc_auc, feature_importance_df):
             yaxis_title='Number of Patients',
             plot_bgcolor='rgba(0,0,0,0)'
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key='age_dist')
         
     with col2:
         st.markdown("#### Heart Disease Prevalence by Gender")
@@ -667,7 +586,7 @@ def show_data_exploration(df, cm, fpr, tpr, roc_auc, feature_importance_df):
             legend_title_text='Condition',
             plot_bgcolor='rgba(0,0,0,0)'
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key='gender_prevalence')
     
     st.markdown("#### Cholesterol vs Blood Pressure by Heart Condition")
     fig = px.scatter(df, x='chol', y='trestbps', color='target_str',
@@ -679,7 +598,7 @@ def show_data_exploration(df, cm, fpr, tpr, roc_auc, feature_importance_df):
         legend_title_text='Condition',
         plot_bgcolor='rgba(0,0,0,0)'
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key='chol_vs_bp')
     
     col1, col2 = st.columns(2)
     with col1:
@@ -688,7 +607,7 @@ def show_data_exploration(df, cm, fpr, tpr, roc_auc, feature_importance_df):
         fig = px.pie(cp_counts, values=cp_counts.values, names=cp_counts.index,
                     color_discrete_sequence=px.colors.sequential.Reds_r)
         fig.update_traces(textposition='inside', textinfo='percent+label')
-        st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key='cp_pie')
     
     with col2:
         st.markdown("#### Max Heart Rate by Age and Condition")
@@ -700,7 +619,7 @@ def show_data_exploration(df, cm, fpr, tpr, roc_auc, feature_importance_df):
             legend_title_text='Condition',
             plot_bgcolor='rgba(0,0,0,0)'
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key='maxhr_age')
 
 # Model information section
 def show_model_info(model, accuracy, cm, fpr, tpr, roc_auc, feature_importance_df):
@@ -758,7 +677,7 @@ def show_model_info(model, accuracy, cm, fpr, tpr, roc_auc, feature_importance_d
             plot_bgcolor='rgba(0,0,0,0)',
             legend=dict(x=0.6, y=0.2)
         )
-        st.plotly_chart(roc_fig, use_container_width=True)
+        st.plotly_chart(roc_fig, use_container_width=True, key='roc_model')
     
     st.markdown("#### Model Parameters")
     st.json({
@@ -781,17 +700,29 @@ def show_model_info(model, accuracy, cm, fpr, tpr, roc_auc, feature_importance_d
         plot_bgcolor='rgba(0,0,0,0)',
         margin=dict(l=150, r=50, t=50, b=50)
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key='feat_importance_model')
 
 # Main app function
 def main():
     """Main application function."""
-    st.markdown("""
-    <div class='main-header'>
-        <h1>❤️ HeartGuard - Heart Disease Prediction</h1>
-        <p>Advanced ML-powered cardiovascular risk assessment</p>
-    </div>
-    """, unsafe_allow_html=True)
+    # Header: logo + title
+    try:
+        col1, col2 = st.columns([1, 8])
+        with col1:
+            st.image("assets/logo.svg", width=84)
+        with col2:
+            st.markdown(
+                """
+                <div class='main-header'>
+                    <h1 style='margin:0'>❤️ HeartGuard - Heart Disease Prediction</h1>
+                    <p style='margin:0; color: #666;'>Advanced ML-powered cardiovascular risk assessment</p>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+    except Exception:
+        # Fallback simple header
+        st.markdown("<h1>❤️ HeartGuard - Heart Disease Prediction</h1>", unsafe_allow_html=True)
     
     st.markdown("""
     <div style='text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(90deg, #237c95cc 0%, #5ac8facc 100%); border-radius: 10px; box-shadow: 0 2px 8px rgba(149, 35, 94, 0.8);'>
