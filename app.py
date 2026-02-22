@@ -23,6 +23,7 @@ st.set_page_config(
 )
 
 # Load external stylesheet if present (keeps app.py tidy and makes visual updates easier)
+
 try:
     with open("assets/styles.css", "r", encoding="utf-8") as _css:
         st.markdown(f"<style>{_css.read()}</style>", unsafe_allow_html=True)
